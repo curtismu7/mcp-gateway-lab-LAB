@@ -1,0 +1,128 @@
+{
+  "schema": "diagram-studio/1",
+  "id": "gateway-scope-flow",
+  "title": "Weather MCP: agent gateway scope to third-party server",
+  "lede": "The agent calls a third-party weather MCP server through the agent gateway; the gateway enforces a live, admin-editable state-scope policy before forwarding: a denied call never reaches the backend. Mock only.",
+  "groups": {
+    "actor": {
+      "label": "Actors",
+      "color": "dark"
+    },
+    "gateway": {
+      "label": "Agent gateway (mock)",
+      "color": "red"
+    },
+    "policy": {
+      "label": "Policy (admin, live)",
+      "color": "blue"
+    },
+    "resource": {
+      "label": "Third party (policy-blind)",
+      "color": "grey"
+    }
+  },
+  "nodes": [
+    {
+      "id": "agent",
+      "label": "AI agent",
+      "group": "actor",
+      "x": 0,
+      "y": 200
+    },
+    {
+      "id": "gateway",
+      "label": "Agent gateway: scope check",
+      "group": "gateway",
+      "x": 300,
+      "y": 200
+    },
+    {
+      "id": "policy",
+      "label": "Allowed state (admin-editable, live)",
+      "group": "policy",
+      "x": 300,
+      "y": 20
+    },
+    {
+      "id": "deny",
+      "label": "DENY: never forwarded",
+      "group": "gateway",
+      "x": 600,
+      "y": 40
+    },
+    {
+      "id": "weather",
+      "label": "Third-party weather MCP (unmodified)",
+      "group": "resource",
+      "x": 600,
+      "y": 360
+    }
+  ],
+  "edges": [
+    {
+      "source": "agent",
+      "target": "gateway",
+      "label": "tools/call get_current_conditions"
+    },
+    {
+      "source": "policy",
+      "target": "gateway",
+      "label": "allowed state read on EVERY request"
+    },
+    {
+      "source": "gateway",
+      "target": "deny",
+      "label": "outside scope: refused at the edge",
+      "dashed": true
+    },
+    {
+      "source": "gateway",
+      "target": "weather",
+      "label": "in scope: forwarded untouched"
+    },
+    {
+      "source": "weather",
+      "target": "agent",
+      "label": "weather answer (no policy ever seen)"
+    }
+  ],
+  "steps": [
+    {
+      "title": "Agent calls the gateway",
+      "what": "The agent sends tools/call get_current_conditions — a city name, or coordinates it geocoded first.",
+      "edges": [
+        0
+      ]
+    },
+    {
+      "title": "Policy read, live",
+      "what": "The gateway reads the admin-editable allowed state on every request: texas, michigan, any, or any-except-blocked.",
+      "edges": [
+        1
+      ]
+    },
+    {
+      "title": "Scope check",
+      "what": "City name AND coordinates are checked exactly (no substring matching) against the state's cities and bounding box, or against the blocked-city list.",
+      "edges": [
+        2,
+        3
+      ]
+    },
+    {
+      "title": "Denied: the backend never sees it",
+      "what": "An out-of-scope call is refused before the third-party server runs. The backend never learns a policy exists.",
+      "edges": [
+        2
+      ]
+    },
+    {
+      "title": "Forwarded: the tool answers",
+      "what": "An in-scope call reaches the unmodified third-party server, which answers normally and stays policy-blind.",
+      "edges": [
+        3,
+        4
+      ]
+    }
+  ]
+}

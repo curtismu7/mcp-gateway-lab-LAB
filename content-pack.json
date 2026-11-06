@@ -1,0 +1,199 @@
+{
+  "schema": "demo-content-pack/1",
+  "id": "mcp-gateway-lab",
+  "title": "MCP Gateway Lab",
+  "version": "0.1.0",
+  "demo": {
+    "id": "mcp-gateway-lab",
+    "name": "MCP Gateway Lab",
+    "catalog": "D999",
+    "baseUrl": "http://localhost:7670",
+    "doctor": "/api/health",
+    "tags": [
+      "mcp",
+      "gateway",
+      "third-party",
+      "policy",
+      "weather",
+      "mock-only"
+    ]
+  },
+  "glossary": [
+    {
+      "id": "gateway-scope",
+      "term": "Gateway scope policy",
+      "definition": "The agent gateway enforces a business boundary (one configurable US state by default, or \"any\", or everywhere except an admin-blocked city) on a third-party MCP tool — entirely at the edge. A denied call never reaches the backend; the backend stays unmodified and policy-blind.",
+      "aliases": [
+        "state scope",
+        "edge policy"
+      ]
+    },
+    {
+      "id": "live-policy",
+      "term": "Live policy reconfigure",
+      "definition": "The allowed state is admin-editable and read on every request: switching it flips the outcome of the very next call, with no gateway restart. A policy that needs a redeploy is not externalized governance.",
+      "aliases": [
+        "live reconfigure",
+        "admin-editable policy"
+      ]
+    },
+    {
+      "id": "exact-match",
+      "term": "Exact city matching",
+      "definition": "City names are matched exactly, split on the first comma — no substring containment: \"Plano, IL\" and \"Miami, OH\" are real, different cities and stay allowed. Coordinates are checked as well as names, because the agent geocodes first.",
+      "aliases": [
+        "no substring matching"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "mcp-tools",
+      "title": "Model Context Protocol: tools/call",
+      "url": "https://modelcontextprotocol.io/docs/concepts/tools",
+      "kind": "standard",
+      "use": "The JSON-RPC tool-call shape the gateway scopes.",
+      "status": "not-read",
+      "checked": "2026-11-06"
+    }
+  ],
+  "cards": [
+    {
+      "id": "try-texas-permit",
+      "label": "Scenario 1: PERMIT: Austin under the Texas policy",
+      "description": "Austin is in Texas — the gateway forwards the call and the third-party server answers normally. The server never learns a policy exists.",
+      "group": "try-it",
+      "action": {
+        "type": "route",
+        "href": "/#scenario-texas-permit"
+      },
+      "terms": [
+        "gateway-scope"
+      ],
+      "story": "S01"
+    },
+    {
+      "id": "try-texas-deny",
+      "label": "Scenario 2: DENY: Miami under the Texas policy",
+      "description": "Miami is outside Texas — the gateway refuses BEFORE the third-party server ever sees the request. The backend never runs.",
+      "group": "try-it",
+      "action": {
+        "type": "route",
+        "href": "/#scenario-texas-deny"
+      },
+      "terms": [
+        "gateway-scope"
+      ],
+      "story": "S02"
+    },
+    {
+      "id": "try-live-reconfigure",
+      "label": "Scenario 3: RECONFIGURE: the same Miami call after switching to Any",
+      "description": "The exact same call flips from denied to permitted because the policy changed — live, no restart. The scope is admin-owned, not app logic.",
+      "group": "try-it",
+      "action": {
+        "type": "route",
+        "href": "/#scenario-live-reconfigure"
+      },
+      "terms": [
+        "gateway-scope",
+        "live-policy"
+      ],
+      "story": "S03"
+    },
+    {
+      "id": "try-coords-outside",
+      "label": "Scenario 4: DENY: resolved coordinates outside Texas",
+      "description": "The agent geocoded first and called with latitude/longitude (Miami): the bounding-box branch catches it even without a city name.",
+      "group": "try-it",
+      "action": {
+        "type": "route",
+        "href": "/#scenario-coords-outside"
+      },
+      "terms": [
+        "gateway-scope"
+      ],
+      "story": "S04"
+    },
+    {
+      "id": "try-qualified-city",
+      "label": "Scenario 5: ALLOWED: \"Miami, OH\" is a different city",
+      "description": "A differently qualified name does not match the blocked label: Miami, OH is a real, different city. Exact matching, no substring containment.",
+      "group": "try-it",
+      "action": {
+        "type": "route",
+        "href": "/#scenario-qualified-city"
+      },
+      "terms": [
+        "exact-match"
+      ],
+      "story": "S05"
+    },
+    {
+      "id": "try-capability-off",
+      "label": "Scenario 6: DENY: the capability flag is off",
+      "description": "With the showcase flag off, every weather call is refused regardless of location — a capability kill switch above the scope check.",
+      "group": "try-it",
+      "action": {
+        "type": "route",
+        "href": "/#scenario-capability-off"
+      },
+      "terms": [
+        "gateway-scope"
+      ],
+      "story": "S06"
+    },
+    {
+      "id": "concept-editor",
+      "label": "Reconfigure the policy live",
+      "description": "Switch the allowed state, add a blocked city, or turn the capability off; the SAME call flips on the next run.",
+      "group": "concept",
+      "action": {
+        "type": "route",
+        "href": "/#policy"
+      }
+    },
+    {
+      "id": "ref-doctor",
+      "label": "Doctor and health",
+      "description": "Preflight checks and the demo-health/1 endpoint.",
+      "group": "setup",
+      "action": {
+        "type": "route",
+        "href": "/api/health"
+      }
+    }
+  ],
+  "stories": [
+    {
+      "id": "S01",
+      "title": "PERMIT: Austin under the Texas policy",
+      "say": "Austin is in Texas — the gateway forwards the call and the third-party server answers normally. The server never learns a policy exists."
+    },
+    {
+      "id": "S02",
+      "title": "DENY: Miami under the Texas policy",
+      "say": "Miami is outside Texas — the gateway refuses BEFORE the third-party server ever sees the request. The backend never runs."
+    },
+    {
+      "id": "S03",
+      "title": "RECONFIGURE: the same Miami call after switching to Any",
+      "say": "The exact same call flips from denied to permitted because the policy changed — live, no restart. The scope is admin-owned, not app logic."
+    },
+    {
+      "id": "S04",
+      "title": "DENY: resolved coordinates outside Texas",
+      "say": "The agent geocoded first and called with latitude/longitude (Miami): the bounding-box branch catches it even without a city name."
+    },
+    {
+      "id": "S05",
+      "title": "ALLOWED: \"Miami, OH\" is a different city",
+      "say": "A differently qualified name does not match the blocked label: Miami, OH is a real, different city. Exact matching, no substring containment."
+    },
+    {
+      "id": "S06",
+      "title": "DENY: the capability flag is off",
+      "say": "With the showcase flag off, every weather call is refused regardless of location — a capability kill switch above the scope check."
+    }
+  ]
+}

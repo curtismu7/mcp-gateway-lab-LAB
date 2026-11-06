@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-gateway-lab
+  labels: { app: mcp-gateway-lab }
+spec:
+  selector: { app: mcp-gateway-lab }
+  ports:
+    - { name: http, port: 80, targetPort: http }
