@@ -123,6 +123,16 @@ export function evaluateWeatherScope({ policy, args }) {
     return { decision: 'denied', reason: 'unknown policy state (fail closed)' };
   }
 
+  // BOTH shapes on one call: check BOTH, deny if EITHER fails. A caller cannot launder a denied
+  // city name through a second argument shape (e.g. "Plano, IL" + in-state coordinates).
+  if (hasCoords && city) {
+    const byCoords = evaluateWeatherScope({ policy: p, args: { latitude: args.latitude, longitude: args.longitude } });
+    if (byCoords.decision === 'denied') return byCoords;
+    const byName = evaluateWeatherScope({ policy: p, args: { city_name: city } });
+    if (byName.decision === 'denied') return byName;
+    return { decision: 'forward', reason: `city and coordinates are in ${STATES[p.allowedState]?.label || 'scope'}` };
+  }
+
   if (p.allowedState === 'any-except-blocked') {
     if (hasCoords) {
       const dLat = toNum(args.latitude); const dLon = toNum(args.longitude);

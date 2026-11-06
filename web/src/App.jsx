@@ -94,7 +94,7 @@ export default function App() {
                 type="button"
                 aria-pressed={info.mode === "real"}
                 data-testid="mode-real"
-                title={info.realAvailable ? "Switch between Mock and Real. Real is owner-run live gateway configuration." : "Real is not configured: set the MGLAB_REAL_* environment (owner-run). Mock keeps working."}
+                title={info.realAvailable ? "Switch between Mock and Real. Real is owner-run and RESERVED in this build: the toggle reports it, the live-gateway data path is not wired yet." : "Real is not configured: set the MGLAB_REAL_* environment (owner-run). Mock keeps working."}
                 disabled={!info.realAvailable && info.mode !== "real"}
                 onClick={async () => {
                   const target = info.mode === "real" ? "mock" : "real";

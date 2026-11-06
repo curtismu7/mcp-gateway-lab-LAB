@@ -47,6 +47,17 @@ test('exact matching: no substring containment', () => {
   assert.equal(evaluateWeatherScope({ policy: DEFAULT_POLICY, args: { city_name: 'austin co' } }).decision, 'denied');
 });
 
+test('BOTH shapes on one call: a denied city name cannot be laundered through in-scope coordinates', () => {
+  // "Plano, IL" + Austin's coordinates: the name check must still deny.
+  const r = evaluateWeatherScope({ policy: DEFAULT_POLICY, args: { city_name: 'Plano, IL', latitude: 32.78, longitude: -96.8 } });
+  assert.equal(r.decision, 'denied');
+  // Miami, FL + Orlando's coordinates under any-except-blocked: still denied.
+  const p = normalizePolicy({ allowedState: 'any-except-blocked', blockedCities: [geocodeCity('Miami, FL')] });
+  assert.equal(evaluateWeatherScope({ policy: p, args: { city_name: 'Miami, FL', latitude: 28.54, longitude: -81.38 } }).decision, 'denied');
+  // a matching name + in-box coordinates still forwards
+  assert.equal(evaluateWeatherScope({ policy: DEFAULT_POLICY, args: { city_name: 'Austin', latitude: 30.2672, longitude: -97.7431 } }).decision, 'forward');
+});
+
 test('the coordinate branch carries the location when the agent geocodes first', () => {
   const inBox = evaluateWeatherScope({ policy: DEFAULT_POLICY, args: { latitude: 30.2672, longitude: -97.7431 } });
   assert.equal(inBox.decision, 'forward');

@@ -1,5 +1,5 @@
 # The host, the ingress class and the TLS secret come from k8s/deploy.sh (SE_HOST, INGRESS_CLASS). There is deliberately no default.
-# The app checks the Host header for loopback names only, so the ingress rewrites it to 127.0.0.1:7670 for the pod.
+# The app checks the Host header for loopback names only, so the ingress rewrites it to 127.0.0.1:7670 for the pod (the container port matches this lab's 7670-7679 block).
 # This is a PUBLIC ingress (mock-only, no secrets, no tenant), so it is rate limited. DNS for the host is created from this
 # ingress by the cluster's external-dns; the certificate comes from k8s/certificate.yaml.
 apiVersion: networking.k8s.io/v1

@@ -6,18 +6,18 @@ test('MODE defaults to Real when configured, else Mock; only mock/real accepted'
   assert.equal(modeFrom({}), 'mock');
   assert.equal(modeFrom({ MODE: 'mock' }), 'mock');
   assert.throws(() => modeFrom({ MODE: 'real' }), /not present/, 'Real requested without configuration is refused, never a silent fallback');
-  const realEnv = { REAL_PINGONE_ENV_ID: 'e', REAL_PINGONE_WORKER_ID: 'i', REAL_PINGONE_WORKER_SECRET: 's' };
+  const realEnv = { MGLAB_REAL_URL: 'e', MGLAB_REAL_CLIENT_ID: 'i', MGLAB_REAL_CLIENT_SECRET: 's' };
   assert.equal(modeFrom(realEnv), 'real', 'default follows Real when configured');
   assert.equal(modeFrom({ ...realEnv, MODE: 'mock' }), 'mock');
   assert.equal(modeFrom({ ...realEnv, MODE: 'real' }), 'real');
   for (const MODE of ['live', 'prod', 'Mock', 'x']) assert.throws(() => modeFrom({ ...realEnv, MODE }), /not available/, MODE);
 });
 
-test('realAvailableFrom only checks PRESENCE (never the values) of the three REAL_PINGONE_* vars', () => {
+test('realAvailableFrom only checks PRESENCE (never the values) of the three MGLAB_REAL_* vars', () => {
   assert.equal(realAvailableFrom({}), false);
-  assert.equal(realAvailableFrom({ REAL_PINGONE_ENV_ID: 'e' }), false);
-  assert.equal(realAvailableFrom({ REAL_PINGONE_ENV_ID: 'e', REAL_PINGONE_WORKER_ID: 'i' }), false);
-  assert.equal(realAvailableFrom({ REAL_PINGONE_ENV_ID: 'e', REAL_PINGONE_WORKER_ID: 'i', REAL_PINGONE_WORKER_SECRET: 's' }), true);
+  assert.equal(realAvailableFrom({ MGLAB_REAL_URL: 'e' }), false);
+  assert.equal(realAvailableFrom({ MGLAB_REAL_URL: 'e', MGLAB_REAL_CLIENT_ID: 'i' }), false);
+  assert.equal(realAvailableFrom({ MGLAB_REAL_URL: 'e', MGLAB_REAL_CLIENT_ID: 'i', MGLAB_REAL_CLIENT_SECRET: 's' }), true);
 });
 
 test('hosted is only the exact string 1', () => {

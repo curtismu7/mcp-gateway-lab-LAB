@@ -1,9 +1,9 @@
 {
-  "name": "agent-preferences-lab",
+  "name": "mcp-gateway-lab",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "What gateway v1.261024 added, in mock only: a nested-claim gate (client_id + act.sub via RequiredClaims) and an AgentCore gateway posture view (shape only, values invented). No tenant, no outbound network.",
+  "description": "A third-party weather MCP server scoped at a mock agent gateway: a live, admin-editable state policy enforced entirely at the edge (UC30/UC31/UC32 mock). No tenant, no outbound network.",
   "license": "MIT",
   "workspaces": [
     "server",
