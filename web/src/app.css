@@ -7,6 +7,9 @@ code { font-family: var(--font-mono); font-size: var(--font-size-2xs); }
 .head h1 { margin: 0 0 4px; font-size: var(--font-size-xl); }
 .intro { margin: 0; max-width: 70ch; color: var(--th-text-muted); font-size: var(--font-size-sm); line-height: 1.45; }
 .head__tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.shelf-link { display: inline-flex; align-items: center; padding: 6px 12px; border: 1px solid var(--th-border-strong); border-radius: var(--btn-radius); background: var(--th-bg-card); color: var(--th-text); font: inherit; font-size: var(--font-size-sm); font-weight: 600; text-decoration: none; }
+.shelf-link:hover { background: var(--th-bg-hover); }
+.shelf-link:focus-visible { outline: 2px solid var(--th-status-info); outline-offset: 2px; }
 .chip { padding: 3px 10px; border-radius: var(--radius-pill); border: 1px solid var(--th-border-strong); background: var(--th-bg-inset); font-size: var(--font-size-2xs); }
 button { font: inherit; font-size: var(--font-size-sm); padding: 6px 12px; border-radius: var(--btn-radius); border: 1px solid var(--th-border-strong); background: var(--th-bg-card); color: var(--th-text); cursor: pointer; }
 button:hover { background: var(--th-bg-hover); }

@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { hostCheck, sameOriginWrites } from './safety.js';
 import { createHealth } from './health.js';
+import { mountShelfRoute } from './shelfLink.js';
 import { loadCast, verticalFrom, VERTICALS } from './cast.js';
 import { hostedFrom, modeFrom, realAvailableFrom } from './config.js';
 import { buildStory } from './story.js';
@@ -119,6 +120,7 @@ export function createApp({ health = createHealth(), configFile = CONFIG, hosted
   // Reset clears this workspace's policy (back to defaults) and runs. Leaving the page also restores defaults
   // (the AI-DEMO2 behaviour), so the next pass of the permit/deny scenarios starts from the documented policy.
   api.post('/reset', withWorkspace((ws, _req, res) => { workspaces.resetWorkspace(ws); res.json({ reset: 'ok', workspace: ws }); }));
+  mountShelfRoute(api); // GET /api/shelf for the header "Shelf" button: before the 404 below, outside the web-build check
   api.use((_req, res) => res.status(404).json({ error: 'not_found' }));
   app.use('/api', api);
   // Errors become short JSON. Express's default handler would send an HTML stack trace with absolute file paths.
