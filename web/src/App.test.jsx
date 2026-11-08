@@ -63,6 +63,7 @@ function mockFetch() {
       else if (policy.allowedState === "michigan" && city === "austin") { decision = "denied"; status = 403; reason = "weather scope restricted to Michigan"; weather = undefined; }
       return json({ decision, reason, tool: b.tool, arguments: b.arguments, policy: { allowedState: policy.allowedState, showcase: policy.showcase, blockedCities: policy.blockedCities || [] }, ...(weather ? { weather } : {}), traceId: "a".repeat(32), hops: [hop(1), hop(2), hop(3), hop(4), hop(5)] }, status);
     }
+    if (url === "/api/shelf") return json({ shelfUrl: override.shelf ?? null });
     if (url === "/api/runs") return json({ workspace: "t", runs: [] });
     if (url === "/api/reset") { override = {}; return json({ reset: "ok" }); }
     return json({}, 404);
@@ -73,6 +74,16 @@ beforeEach(() => { override = {}; mockFetch(); window.location.hash = ""; });
 const ready = async () => { render(<App />); await screen.findByText("PERMIT: Austin under the Texas policy"); await screen.findByTestId("verdict"); };
 
 describe("shell", () => {
+  it("shows the Shelf button when /api/shelf has a URL, and nothing when it does not", async () => {
+    override.shelf = "https://shelf.example:8443";
+    await ready();
+    expect(await screen.findByRole("link", { name: "Shelf" })).toHaveAttribute("href", "https://shelf.example:8443");
+  });
+  it("renders no Shelf button without a shelf URL", async () => {
+    await ready();
+    expect(screen.queryByRole("link", { name: "Shelf" })).toBeNull();
+  });
+
   it("shows the banner, the mode, and sends X-Workspace on API calls", async () => {
     await ready();
     expect(screen.getByTestId("banner")).toHaveTextContent(/^SIMULATED/);
