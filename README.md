@@ -1,6 +1,9 @@
-# MCP Gateway Lab
+# MCP Gateway LAB
 
-**Tier: Demo.** A third-party weather MCP server is scoped at an agent gateway: the gateway enforces a live, admin-editable state-scope policy entirely at the edge — the backend never sees the restriction and has no concept of it. This is the standalone mock of the AI-DEMO2 weather-mcp showcase (UC30 / UC31 / UC32 and the `tx-weather-scope` gateway policy) — same decision contract, no real gateway or tenant.
+Tier: Demo.
+Repo: https://github.com/curtismu7/mcp-gateway-lab-LAB
+
+A third-party weather MCP server is scoped at an agent gateway: the gateway enforces a live, admin-editable state-scope policy entirely at the edge — the backend never sees the restriction and has no concept of it. This is the standalone mock of the AI-DEMO2 weather-mcp showcase (UC30 / UC31 / UC32 and the `tx-weather-scope` gateway policy) — same decision contract, no real gateway or tenant.
 
 1. **The third-party tool.** An unmodified, policy-blind weather MCP server. Remove the gateway and every city on earth works — governance must live at the edge, because you cannot always change the tool.
 2. **The scope policy.** The gateway allows one configurable US state at a time (Texas by default), or everything (`any`), or everything except an admin-managed blocked-city list. It checks the city NAME and the COORDINATES (the agent geocodes first), exactly, with no substring matching: "Plano, IL" is not Plano, TX, and "Miami, OH" is not Miami, FL.
@@ -28,6 +31,36 @@ or `npm ci && npm run doctor && npm start`. With Docker (OrbStack): `HOST_PORT=7
 | `npm run reset` | resets the default workspace's policy and runs on a running server |
 
 Port range 7670-7679 (default 7670). `GET /api/health` answers `demo-health/1`.
+
+## Run from a clone
+
+Prerequisites: Node 26 or newer. Docker (OrbStack) only for the Docker form. Mock needs no tenant and no credentials.
+
+```
+git clone https://github.com/curtismu7/mcp-gateway-lab-LAB.git
+cd mcp-gateway-lab-LAB
+npm ci
+npm run build
+npm run doctor
+npm start
+```
+
+Open http://localhost:7670/. `GET /api/health` answers `demo-health/1`. Or with Docker: `HOST_PORT=7670 docker compose up --build -d` from the same folder.
+
+## What to do if the port is taken
+
+```
+Ports: mcp-gateway-lab-LAB listens on 7670 (range 7670-7679). Docker publishes it on 127.0.0.1 only.
+
+If the port is taken:
+1. Find what is using it:
+   lsof -iTCP:7670 -sTCP:LISTEN -n -P
+2. If it is an old copy of this lab (npm start), stop that process: kill <PID>.
+   If it is this lab's container: docker compose down (from this folder).
+3. If it is something else, stop it, or pick another port in 7670-7679:
+   PORT=7671 npm start, or HOST_PORT=7671 docker compose up --build -d
+4. npm run doctor reports whether the port is free.
+```
 
 ## API
 
