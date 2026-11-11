@@ -48,7 +48,7 @@ describe("hand-off from Customer Agent LAB", () => {
     expect(strip.textContent).toContain("UC31");
     expect(screen.getByTestId("banner").nextElementSibling).toBe(strip);
     expect(screen.getAllByRole("button", { name: /Back to Customer Agent LAB/ })).toHaveLength(2);
-    expect(document.querySelector(".head__tools > button.return-link--header")).not.toBeNull();
+    expect(document.querySelector(".head__tools .top-menu button.return-link--header")).not.toBeNull();
     await waitFor(() => expect(screen.getByTestId("pg").textContent).toBe("texas-deny"));
     expect(calls).toContain("/api/scenarios?vertical=health");
   });
