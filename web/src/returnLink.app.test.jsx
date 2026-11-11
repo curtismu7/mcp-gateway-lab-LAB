@@ -83,4 +83,12 @@ describe("hand-off from Customer Agent LAB", () => {
     fireEvent.click(screen.getByRole("button", { name: /Back to/ }));
     expect(navigate).toHaveBeenLastCalledWith("http://127.0.0.1:5603/?returned=mcp-gateway-lab&uc=UC32");
   });
+
+  it("?from=ai-demo-standalone: strip names AI Demo Standalone, Back goes to /ai-demo-standalone/ under the proxy", () => {
+    const navigate = vi.fn();
+    render(<ReturnLink app="mcp-gateway-lab" navigate={navigate} location={{ pathname: "/mcp-gateway-lab/", search: "?from=ai-demo-standalone&uc=UC12" }} />);
+    expect(screen.getByRole("note", { name: "Opened from AI Demo Standalone" }).textContent).toContain("UC12");
+    fireEvent.click(screen.getByRole("button", { name: /Back to AI Demo Standalone/ }));
+    expect(navigate).toHaveBeenLastCalledWith("/ai-demo-standalone/?returned=mcp-gateway-lab&uc=UC12");
+  });
 });
