@@ -1,8 +1,9 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App, { BANNER_UNKNOWN } from "./App";
 import { labelOffsets } from "./components/PatternDiagram";
+import { setJsonView } from "./components/JsonPane";
 
 const STORY = {
   title: "t", intro: "intro text", banner: "SIMULATED: mock gateway", tokenLabel: "MOCK gateway decisions", hosted: false, verticals: ["retail", "health"],
@@ -30,7 +31,7 @@ const DIAGRAM = {
   nodes: [{ id: "agent", label: "AI agent", kind: "actor", x: 0, y: 0 }, { id: "gateway", label: "Agent gateway: scope check", kind: "gateway", x: 300, y: 0 }],
   steps: [{ from: "agent", to: "gateway", label: "tools/call", say: "The agent calls the gateway." }, { from: "gateway", to: "agent", label: "Decision", say: "The gateway answers." }],
 };
-const hop = (n) => ({ n, from: "agent", to: "gateway", label: `hop ${n}`, traceparent: `00-${"a".repeat(32)}-${String(n).repeat(16)}-01`, request: `traceparent: 00-${"a".repeat(32)}-${String(n).repeat(16)}-01`, response: "HTTP/1.1 200 OK" });
+const hop = (n) => ({ n, from: "agent", to: "gateway", label: `hop ${n}`, traceparent: `00-${"a".repeat(32)}-${String(n).repeat(16)}-01`, request: `traceparent: 00-${"a".repeat(32)}-${String(n).repeat(16)}-01${n === 1 ? '\n\n{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_current_conditions"}}' : ""}`, response: "HTTP/1.1 200 OK" });
 
 const DEFAULT_POLICY = { showcase: true, allowedState: "texas", blockedCities: [], blockRadiusDeg: 0.2 };
 let calls;
@@ -69,7 +70,7 @@ function mockFetch() {
     return json({}, 404);
   });
 }
-beforeEach(() => { override = {}; mockFetch(); window.location.hash = ""; });
+beforeEach(() => { override = {}; mockFetch(); window.location.hash = ""; setJsonView("form"); });
 
 const ready = async () => { render(<App />); await screen.findByText("PERMIT: Austin under the Texas policy"); await screen.findByTestId("verdict"); };
 
@@ -105,6 +106,22 @@ describe("gateway scope tab", () => {
     expect(screen.getByTestId("weather")).toHaveTextContent("third-party weather");
     expect(screen.getByTestId("hops")).toHaveTextContent(/traceparent: 00-a{32}-1{16}-01/);
     expect(screen.getByTestId("facts")).toHaveTextContent("measured");
+  });
+  it("shows the weather answer as a Form first and as the exact JSON text after the JSON button (rule 24)", async () => {
+    await ready();
+    const box = within(screen.getByTestId("weather"));
+    expect(box.getByRole("button", { name: "Form" })).toHaveAttribute("aria-pressed", "true");
+    expect(box.getByRole("group", { name: "Weather answer" })).toHaveTextContent("82");
+    await userEvent.click(box.getByRole("button", { name: "JSON" }));
+    expect(box.getByRole("button", { name: "JSON" })).toHaveAttribute("aria-pressed", "true");
+    expect(box.getByLabelText("Weather answer")).toHaveTextContent('"temp_f":82');
+  });
+  it("splits a hop's HTTP transcript: headers stay text, the JSON-RPC body gets its own Form | JSON pane", async () => {
+    await ready();
+    expect(screen.getByLabelText("Request of hop 1 headers")).toHaveTextContent(/^traceparent: 00-a{32}-1{16}-01$/);
+    expect(screen.getByRole("group", { name: "Request of hop 1 body" })).toHaveTextContent("tools/call");
+    expect(screen.queryByLabelText("Request of hop 2 body")).toBeNull();
+    expect(screen.queryByLabelText("Request of hop 2 headers")).toBeNull();
   });
   it("routes texas-deny to DENIED with the scope reason and no weather answer", async () => {
     await ready();
