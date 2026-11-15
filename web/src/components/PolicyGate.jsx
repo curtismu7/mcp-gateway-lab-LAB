@@ -4,6 +4,22 @@ import { runTool, getPolicy, setPolicy as postPolicy } from "../api";
 import { visible } from "../safeText";
 
 const STATUS_CLASS = { measured: "tag tag--ok", inferred: "tag", UNVERIFIED: "tag tag--warn" };
+// Keys that matter in this lab's payloads (the policy, the tool, and where the call points); decision / reason are alert keys already.
+const HOT = ["tool", "name", "method", "allowedState", "showcase", "blockedCities", "city_name", "latitude", "longitude"];
+
+// A hop is an HTTP transcript. When a blank line separates the headers from a JSON body, the body gets the Form | JSON pane; the rest stays text.
+function Wire({ text, label }) {
+  const at = typeof text === "string" ? text.indexOf("\n\n") : -1;
+  const body = at > 0 ? text.slice(at + 2) : null;
+  const isBody = body !== null && /^\s*[{[]/.test(body);
+  if (!isBody) return <Json value={text} label={label} hot={HOT} />;
+  return (
+    <>
+      <Json value={text.slice(0, at)} label={`${label} headers`} />
+      <Json value={body} label={`${label} body`} hot={HOT} />
+    </>
+  );
+}
 
 export function Hops({ hops, traceId }) {
   return (
@@ -12,8 +28,8 @@ export function Hops({ hops, traceId }) {
       {hops.map((h) => (
         <details key={h.n} open={h.n === 1}>
           <summary>{h.n}. {h.label}</summary>
-          <p className="muted">Request</p><Json value={h.request} label={`Request of hop ${h.n}`} />
-          <p className="muted">Response</p><Json value={h.response} label={`Response of hop ${h.n}`} />
+          <p className="muted">Request</p><Wire text={h.request} label={`Request of hop ${h.n}`} />
+          <p className="muted">Response</p><Wire text={h.response} label={`Response of hop ${h.n}`} />
         </details>
       ))}
     </section>
@@ -28,7 +44,7 @@ export function Verdict({ run }) {
     <div className={`verdict verdict--${cls}`} data-testid="verdict" role="status">
       <strong className="verdict__word">{word}</strong>
       {run.reason && <p className="reason" data-reason="scope">{visible(run.reason)}</p>}
-      {run.weather && <p data-testid="weather">Weather (from the mock third-party server): <code>{visible(run.weather)}</code></p>}
+      {run.weather && <div data-testid="weather"><p>Weather (from the mock third-party server):</p><Json value={run.weather} label="Weather answer" hot={["city", "lat", "lon", "temp_f"]} /></div>}
     </div>
   );
 }
@@ -196,7 +212,7 @@ export default function PolicyGate({ story, resetSignal, requestedId, onSelect }
       <section className="panel" aria-labelledby="policy-h2">
         <h2 id="policy-h2">Scenario policy (decoded)</h2>
         <p className="tag tag--warn">{story.tokenLabel}</p>
-        <Json value={{ policy: scenario.policy, call: scenario.call }} label="Scenario input" testId="scenario-prefs" />
+        <Json value={{ policy: scenario.policy, call: scenario.call }} label="Scenario input" testId="scenario-prefs" hot={HOT} />
         <h3>What we know, and how well</h3>
         <ul className="facts" data-testid="facts">
           {story.facts.map((f) => <li key={f.id}><span className={STATUS_CLASS[f.status] || "tag"}>{f.status}</span> {visible(f.text)} <span className="muted">({visible(f.source)})</span></li>)}
