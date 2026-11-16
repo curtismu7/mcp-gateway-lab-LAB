@@ -16,6 +16,7 @@ import { DIAGRAM_NAMES, buildDiagram } from './diagramData.js';
 import { DEFAULT_POLICY, GatewayInputError, evaluateWeatherScope, geocodeCity, normalizePolicy } from './gateway.js';
 import { callWeatherTool } from './weatherServer.js';
 import { buildHops, newTrace } from './trace.js';
+import { weatherGatewayTrace } from './weatherGatewayTrace.js';
 import { createWorkspaces, workspaceFrom } from './workspaces.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -108,12 +109,15 @@ export function createApp({ health = createHealth(), configFile = CONFIG, hosted
     const trace = newTrace(req.headers.traceparent);
     const hops = buildHops({ trace, cast: castFor(req), decision: result.decision, reason: result.reason, tool: body.tool, args, policy, weather });
     res.set('traceparent', hops[0].traceparent);
-    return res.status(result.decision === 'forward' ? 200 : 403).json({
+    const reply = {
       decision: result.decision, reason: result.reason, tool: body.tool, arguments: args,
       policy: { allowedState: policy.allowedState, showcase: policy.showcase, blockedCities: policy.blockedCities },
       ...(weather ? { weather } : {}),
-      workspace: ws, traceId: trace.traceId, hops,
-    });
+      workspace: ws, traceId: trace.traceId,
+    };
+    // "What Privilege did" (Rule 25): the request, this reply and the checks, drawn by the page under the result.
+    const gatewayTrace = weatherGatewayTrace({ cast: castFor(req), tool: body.tool, args, policy: normalizePolicy(policy), decision: result.decision, reason: result.reason, body: reply, traceparent: hops[0].traceparent, workspace: ws });
+    return res.status(result.decision === 'forward' ? 200 : 403).json({ ...reply, hops, trace: gatewayTrace });
   }));
 
   api.get('/runs', withWorkspace((ws, _req, res) => res.json(workspaces.runs(ws))));

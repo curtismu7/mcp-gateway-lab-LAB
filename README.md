@@ -66,7 +66,7 @@ If the port is taken:
 
 - `GET /api/scenarios` — the story: title, intro, banner, tools, six scenarios, facts (measured / inferred / UNVERIFIED), talk track.
 - `GET/POST /api/policy` — read / set this workspace's gateway policy (normalized; an unknown allowedState falls back to the NARROWEST state, never wider; blocked cities are geocoded once at add time and unknown cities are refused).
-- `POST /api/weather/tool` — the gateway. Body `{ tool, arguments? }`. `200` forwarded (the mock third-party server answers), `403` denied before the backend ever runs. Raw mock hops with W3C `traceparent`.
+- `POST /api/weather/tool` — the gateway. Body `{ tool, arguments? }`. `200` forwarded (the mock third-party server answers), `403` denied before the backend ever runs. Raw mock hops with W3C `traceparent`. The reply also carries `trace`, the "What Privilege did" record the page draws under the result: the exact request and reply plus three `checked` decisions (capability flag, scope check, forward), all simulated by this lab's mock gateway.
 - `GET /api/runs`, `POST /api/reset` — per-workspace history and reset.
 - `GET /api/diagram`, `GET /api/info`, `GET /api/health` — diagram-studio/1 data, build info (rule 19 fields), `demo-health/1`.
 - `POST /api/mode` — the Mock/Real toggle, body exactly `{ source: "mock" | "real" }`; 409 when Real is unconfigured.
