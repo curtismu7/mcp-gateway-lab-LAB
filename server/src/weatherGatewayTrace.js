@@ -1,4 +1,4 @@
-// "What Privilege did" (Rule 25) for the mock weather gateway (POST /api/weather/tool). This lab is mock only: Real is reserved and has no
+// "What the gateway did" (Rule 25) for the mock weather gateway (POST /api/weather/tool). This lab is mock only: Real is reserved and has no
 // data path, so the trace is always source 'mock', whatever MODE says. Every decision is 'checked' because evaluateWeatherScope really
 // computed it, in the order it runs: the capability flag first, then the scope check, and only a permit reaches the third-party server.
 // The request is the JSON-RPC tools/call the agent sends (the same body hop 1 shows); the response is the reply this endpoint sends, minus

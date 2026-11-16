@@ -9,6 +9,8 @@ const STATUS_CLASS = { measured: "tag tag--ok", inferred: "tag", UNVERIFIED: "ta
 const HOT = ["tool", "name", "method", "allowedState", "showcase", "blockedCities", "city_name", "latitude", "longitude"];
 
 // Real is reserved in this lab (no live gateway is wired), so the panel must not say "Real mode shows the actual gateway".
+// The panel's heading is the shared default "What Privilege did"; this lab never involves Privilege, so it passes its own title.
+const TRACE_TITLE = "What the gateway did";
 const TRACE_NOTE = "Simulated: this lab's own mock gateway computed every decision here, in the order it runs them. Real mode is reserved in this build (no live gateway is wired), so nothing on this panel came from a real gateway.";
 
 // A hop is an HTTP transcript. When a blank line separates the headers from a JSON body, the body gets the Form | JSON pane; the rest stays text.
@@ -210,7 +212,7 @@ export default function PolicyGate({ story, resetSignal, requestedId, onSelect }
         {fail && <p className="field-error" role="alert">{fail}</p>}
         <Verdict run={run} />
         {run && <Hops hops={run.hops} traceId={run.traceId} />}
-        <GatewayTrace source="mock" basisNote={TRACE_NOTE} exchanges={run?.trace ? [{ step: 1, title: "Agent calls the gateway", status: run.trace.response?.status ?? null, trace: run.trace }] : []} />
+        <GatewayTrace source="mock" title={TRACE_TITLE} basisNote={TRACE_NOTE} exchanges={run?.trace ? [{ step: 1, title: "Agent calls the gateway", status: run.trace.response?.status ?? null, trace: run.trace }] : []} />
       </section>
       {policy && <PolicyEditor current={policy} onSaved={onPolicySaved} />}
       <ToolCall tools={story.tools} onResult={(r) => setRun(r)} />

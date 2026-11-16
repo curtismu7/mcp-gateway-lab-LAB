@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The Rule 25 trace panel is headed "What the gateway did" (the lab passes the shared panel its `title` prop) instead of the shared default "What Privilege did", which this lab never involves. The panel's lead sentence still names the Privilege gateway; that wording is in the shared component. 1 web test extended.
 - The header shows this lab's own Verified / In progress mark from the demo shelf, through the shared `VerifyMark` (vendored from AI-DEMO-Standalone `shared/verify-mark`, pinned): in the top menu beside the Shelf link, nothing when the shelf has no mark for the lab. 2 web tests.
 
 ## v1.261028 AgentCore governance (2026-10-28)
