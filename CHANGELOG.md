@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The header shows this lab's own Verified / In progress mark from the demo shelf, through the shared `VerifyMark` (vendored from AI-DEMO-Standalone `shared/verify-mark`, pinned): in the top menu beside the Shelf link, nothing when the shelf has no mark for the lab. 2 web tests.
+
 ## v1.261028 AgentCore governance (2026-10-28)
 
 - New tab "v1.261028 AgentCore": capability tables read from the binary diff, a runtime-bypass check and a gateway-caller-class check (pure engines in `server/src/agentcoreGov.js`, data in `agentcoreData.js`), `GET /api/agentcore`, `POST /api/agentcore/evaluate`, talk-track entry, 6 server tests and 3 web tests. Everything INFERRED; the real rules were not observed.
