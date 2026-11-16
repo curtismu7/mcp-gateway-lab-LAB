@@ -120,9 +120,12 @@ describe("gateway scope tab", () => {
     expect(screen.getByTestId("hops")).toHaveTextContent(/traceparent: 00-a{32}-1{16}-01/);
     expect(screen.getByTestId("facts")).toHaveTextContent("measured");
   });
-  it("draws What Privilege did under the result, as a mock trace with checked decisions and the exact request and response", async () => {
+  it("draws What the gateway did under the result, as a mock trace with checked decisions and the exact request and response", async () => {
     await ready();
     const panel = await screen.findByTestId("gateway-trace");
+    expect(within(panel).getByRole("heading", { level: 2, name: "What the gateway did" })).toBeInTheDocument();
+    expect(panel).toHaveAttribute("aria-label", "What the gateway did");
+    expect(within(panel).queryByText("What Privilege did")).toBeNull();
     expect(within(panel).getByTestId("gateway-trace-basis")).toHaveTextContent(/Real mode is reserved/);
     expect(within(panel).queryByText(/Real mode shows the actual gateway/)).toBeNull();
     expect(within(panel).getByTestId("trace-1")).toHaveTextContent("HTTP 200");

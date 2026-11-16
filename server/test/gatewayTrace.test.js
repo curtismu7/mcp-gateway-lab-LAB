@@ -1,4 +1,4 @@
-// "What Privilege did" for the mock weather gateway: the trace in the POST /api/weather/tool reply. Mock only (Real is reserved, no data
+// "What the gateway did" for the mock weather gateway: the trace in the POST /api/weather/tool reply. Mock only (Real is reserved, no data
 // path), so the trace is always source 'mock' and every decision is 'checked' (evaluateWeatherScope computed it). It passes the shared
 // contract (assertTrace) and holds nothing secret.
 import test from 'node:test';
