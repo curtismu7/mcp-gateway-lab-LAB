@@ -185,8 +185,10 @@ describe("gateway scope tab", () => {
 describe("diagram tab", () => {
   it("draws the boxes from /api/diagram and Simulate highlights a step; Reset clears it", async () => {
     await ready();
-    await userEvent.click(screen.getByRole("tab", { name: "Diagram" }));
+    await userEvent.click(screen.getByRole("link", { name: "Diagram" }));
     expect(await screen.findByText("Agent gateway: scope check")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Diagram" })).toHaveAttribute("aria-current", "page"); // shell-bar pill nav marks the current page
+    expect(screen.getByRole("link", { name: "Gateway scope" })).not.toHaveAttribute("aria-current");
     expect(calls.some((c) => c.url.startsWith("/api/diagram?vertical=retail"))).toBe(true);
     expect(screen.getByTestId("banner")).toBeInTheDocument();
     expect(screen.getByLabelText(/Step time/)).toBeInTheDocument();
@@ -200,9 +202,9 @@ describe("diagram tab", () => {
 describe("talk track and presenter mode", () => {
   it("lists the talk track; presenter mode keeps the banner and shows the say-text; Esc leaves", async () => {
     await ready();
-    await userEvent.click(screen.getByRole("tab", { name: "Talk track" }));
+    await userEvent.click(screen.getByRole("link", { name: "Talk track" }));
     expect(screen.getByTestId("talk-track")).toHaveTextContent("Everything is simulated.");
-    await userEvent.click(screen.getByRole("tab", { name: "Gateway scope" }));
+    await userEvent.click(screen.getByRole("link", { name: "Gateway scope" }));
     await userEvent.keyboard("p");
     expect(await screen.findByTestId("presenter-say")).toHaveTextContent("The weather server is unmodified and policy-blind.");
     expect(screen.getByTestId("banner")).toHaveTextContent(/^SIMULATED/);
@@ -230,7 +232,7 @@ describe("banner visibility on every tab, presenter mode and hosted mode", () =>
   it("is visible (not hidden, not display:none) on every tab and in presenter mode", async () => {
     await ready();
     for (const name of ["Diagram", "Talk track"]) {
-      await userEvent.click(screen.getByRole("tab", { name }));
+      await userEvent.click(screen.getByRole("link", { name }));
       expect(screen.getByTestId("banner")).toBeVisible();
     }
   });
