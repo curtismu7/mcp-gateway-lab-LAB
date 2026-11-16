@@ -62,7 +62,7 @@ function mockFetch() {
       if (policy.showcase === false) { decision = "denied"; status = 403; reason = "weather capability disabled"; weather = undefined; }
       else if (policy.allowedState === "texas" && miami) { decision = "denied"; status = 403; reason = "weather scope restricted to Texas (demo policy) — city not recognized as Texas"; weather = undefined; }
       else if (policy.allowedState === "michigan" && city === "austin") { decision = "denied"; status = 403; reason = "weather scope restricted to Michigan"; weather = undefined; }
-      return json({ decision, reason, tool: b.tool, arguments: b.arguments, policy: { allowedState: policy.allowedState, showcase: policy.showcase, blockedCities: policy.blockedCities || [] }, ...(weather ? { weather } : {}), traceId: "a".repeat(32), hops: [hop(1), hop(2), hop(3), hop(4), hop(5)] }, status);
+      return json({ decision, reason, tool: b.tool, arguments: b.arguments, policy: { allowedState: policy.allowedState, showcase: policy.showcase, blockedCities: policy.blockedCities || [] }, ...(weather ? { weather } : {}), traceId: "a".repeat(32), hops: [hop(1), hop(2), hop(3), hop(4), hop(5)], trace: gwTrace({ b, decision, reason, weather, status }) }, status);
     }
     if (url === "/api/shelf") return json({ shelfUrl: override.shelf ?? null });
     if (url === "/api/runs") return json({ workspace: "t", runs: [] });
@@ -71,6 +71,19 @@ function mockFetch() {
   });
 }
 beforeEach(() => { override = {}; mockFetch(); window.location.hash = ""; setJsonView("form"); });
+
+// What the server's mock trace looks like (server/src/weatherGatewayTrace.js), enough for the panel to draw.
+const gwTrace = ({ b, decision, reason, weather, status }) => ({
+  source: "mock",
+  request: { method: "POST", url: "https://gateway.northwind.example/weather", headers: { authorization: "Bearer <MOCK token>", "content-type": "application/json" }, body: { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: b.tool, arguments: b.arguments } } },
+  response: { status, headers: { "content-type": "application/json" }, body: { decision, reason, ...(weather ? { weather } : {}) } },
+  decisions: [
+    { id: "capability", label: "Weather capability enabled (showcase flag)", outcome: "pass", basis: "checked", evidence: "the showcase flag is on" },
+    { id: "scope", label: "Scope check against the policy (texas)", outcome: decision === "forward" ? "pass" : "fail", basis: "checked", evidence: reason },
+    { id: "forward", label: "Forward to the third-party weather server", outcome: decision === "forward" ? "pass" : "skipped", basis: "checked", evidence: "forwarding" },
+  ],
+  record: "GET /api/runs lists this decision",
+});
 
 const ready = async () => { render(<App />); await screen.findByText("PERMIT: Austin under the Texas policy"); await screen.findByTestId("verdict"); };
 
@@ -106,6 +119,19 @@ describe("gateway scope tab", () => {
     expect(screen.getByTestId("weather")).toHaveTextContent("third-party weather");
     expect(screen.getByTestId("hops")).toHaveTextContent(/traceparent: 00-a{32}-1{16}-01/);
     expect(screen.getByTestId("facts")).toHaveTextContent("measured");
+  });
+  it("draws What Privilege did under the result, as a mock trace with checked decisions and the exact request and response", async () => {
+    await ready();
+    const panel = await screen.findByTestId("gateway-trace");
+    expect(within(panel).getByTestId("gateway-trace-basis")).toHaveTextContent(/Real mode is reserved/);
+    expect(within(panel).queryByText(/Real mode shows the actual gateway/)).toBeNull();
+    expect(within(panel).getByTestId("trace-1")).toHaveTextContent("HTTP 200");
+    expect(within(panel).getByTestId("trace-1-decisions")).toHaveTextContent("Scope check against the policy (texas)");
+    expect(within(panel).getByTestId("trace-1-request-box")).toHaveTextContent("tools/call");
+    expect(within(panel).getByTestId("trace-1-response-box")).toHaveTextContent("third-party weather");
+    await userEvent.click(screen.getByText("DENY: Miami under the Texas policy"));
+    await waitFor(() => expect(screen.getByTestId("trace-1")).toHaveTextContent("HTTP 403"));
+    expect(screen.getByTestId("trace-1-decisions")).toHaveTextContent("NOT REACHED");
   });
   it("shows the weather answer as a Form first and as the exact JSON text after the JSON button (rule 24)", async () => {
     await ready();

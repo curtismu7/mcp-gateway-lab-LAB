@@ -2,10 +2,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Json from "./Json";
 import { runTool, getPolicy, setPolicy as postPolicy } from "../api";
 import { visible } from "../safeText";
+import GatewayTrace from "../gateway-trace/GatewayTrace";
 
 const STATUS_CLASS = { measured: "tag tag--ok", inferred: "tag", UNVERIFIED: "tag tag--warn" };
 // Keys that matter in this lab's payloads (the policy, the tool, and where the call points); decision / reason are alert keys already.
 const HOT = ["tool", "name", "method", "allowedState", "showcase", "blockedCities", "city_name", "latitude", "longitude"];
+
+// Real is reserved in this lab (no live gateway is wired), so the panel must not say "Real mode shows the actual gateway".
+const TRACE_NOTE = "Simulated: this lab's own mock gateway computed every decision here, in the order it runs them. Real mode is reserved in this build (no live gateway is wired), so nothing on this panel came from a real gateway.";
 
 // A hop is an HTTP transcript. When a blank line separates the headers from a JSON body, the body gets the Form | JSON pane; the rest stays text.
 function Wire({ text, label }) {
@@ -206,6 +210,7 @@ export default function PolicyGate({ story, resetSignal, requestedId, onSelect }
         {fail && <p className="field-error" role="alert">{fail}</p>}
         <Verdict run={run} />
         {run && <Hops hops={run.hops} traceId={run.traceId} />}
+        <GatewayTrace source="mock" basisNote={TRACE_NOTE} exchanges={run?.trace ? [{ step: 1, title: "Agent calls the gateway", status: run.trace.response?.status ?? null, trace: run.trace }] : []} />
       </section>
       {policy && <PolicyEditor current={policy} onSaved={onPolicySaved} />}
       <ToolCall tools={story.tools} onResult={(r) => setRun(r)} />
