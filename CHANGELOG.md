@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Diagram: arrow labels are drawn in a layer above the boxes and placed so none overlaps another label or sits on a box (the walked arrow's label turns bold and coloured and is raised); click a box and it expands in place with its details below its title: its kind, reach (boxes upstream and downstream), and the arrows in and out (each opens that box), on a card with colour that means something (blue where it is, green what it sends to, amber what reaches it). Click again, Close, the empty canvas or Reset collapses it; Copy link and `?box=<id>` open the page with a box expanded. The shared `diagram-kit` (vendored into `web/src/diagram-kit/`, pinned) does the work.
 
 - The Rule 25 trace panel is headed "What the gateway did" (the lab passes the shared panel its `title` prop) instead of the shared default "What Privilege did", which this lab never involves. The panel's lead sentence still names the Privilege gateway; that wording is in the shared component. 1 web test extended.
 - The header shows this lab's own Verified / In progress mark from the demo shelf, through the shared `VerifyMark` (vendored from AI-DEMO-Standalone `shared/verify-mark`, pinned): in the top menu beside the Shelf link, nothing when the shelf has no mark for the lab. 2 web tests.
