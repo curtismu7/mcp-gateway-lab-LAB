@@ -84,7 +84,7 @@ function PolicyEditor({ current, onSaved }) {
   };
   return (
     <section className="panel" aria-labelledby="policy-h" data-testid="policy-editor" id="policy">
-      <h2 id="policy-h">Gateway scope policy (admin-editable, live)</h2>
+      <h2 id="policy-h"><span className="step-num" aria-hidden="true">4</span>Gateway scope policy (admin-editable, live)</h2>
       <p className="muted">The business boundary, enforced entirely at the gateway. It is read on EVERY request: change it and the same call flips, with no restart. This is the mock of the allowed-state flag.</p>
       <label htmlFor="policy-state">Allowed state</label>
       <select id="policy-state" value={policy.allowedState} onChange={(e) => save({ ...policy, allowedState: e.target.value })} data-testid="policy-state">
@@ -125,7 +125,7 @@ function ToolCall({ tools, onResult }) {
   };
   return (
     <section className="panel" aria-labelledby="call-h" data-testid="tool-call">
-      <h2 id="call-h">Call the third-party tool through the gateway</h2>
+      <h2 id="call-h"><span className="step-num" aria-hidden="true">2</span>Call the third-party tool through the gateway</h2>
       <p className="muted">One agent-originated tools/call: the gateway measures it against the policy BEFORE the third-party server ever sees it.</p>
       <label htmlFor="call-tool">Tool</label>
       <select id="call-tool" value={tool} onChange={(e) => setTool(e.target.value)}>
@@ -201,14 +201,14 @@ export default function PolicyGate({ story, resetSignal, requestedId, onSelect }
   return (
     <div className="gate">
       <section className="panel" aria-labelledby="sc-h">
-        <h2 id="sc-h">Scenarios</h2>
+        <h2 id="sc-h"><span className="step-num" aria-hidden="true">1</span>Scenarios</h2>
         <div className="seg" role="group" aria-label="Scenario">
           {story.scenarios.map((s) => <button key={s.id} type="button" aria-pressed={s.id === id} onClick={() => { setId(s.id); if (onSelect) onSelect(s.id); }}>{s.title}</button>)}
         </div>
         <p className="lesson" data-testid="lesson">{scenario.lesson}</p>
       </section>
       <section className="panel" aria-labelledby="res-h">
-        <h2 id="res-h">Gateway result</h2>
+        <h2 id="res-h"><span className="step-num" aria-hidden="true">3</span>Gateway result</h2>
         {fail && <p className="field-error" role="alert">{fail}</p>}
         <Verdict run={run} />
         {run && <Hops hops={run.hops} traceId={run.traceId} />}
@@ -217,7 +217,7 @@ export default function PolicyGate({ story, resetSignal, requestedId, onSelect }
       {policy && <PolicyEditor current={policy} onSaved={onPolicySaved} />}
       <ToolCall tools={story.tools} onResult={(r) => setRun(r)} />
       <section className="panel" aria-labelledby="policy-h2">
-        <h2 id="policy-h2">Scenario policy (decoded)</h2>
+        <h2 id="policy-h2"><span className="step-num" aria-hidden="true">5</span>Scenario policy (decoded)</h2>
         <p className="tag tag--warn">{story.tokenLabel}</p>
         <Json value={{ policy: scenario.policy, call: scenario.call }} label="Scenario input" testId="scenario-prefs" hot={HOT} />
         <h3>What we know, and how well</h3>
