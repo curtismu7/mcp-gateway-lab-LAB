@@ -73,6 +73,15 @@ If the port is taken:
 
 Workspace id goes in `X-Workspace` (one visitor's state never touches another's).
 
+## Postman collection
+
+`postman/mcp-gateway-lab.postman_collection.json` drives the gateway without the UI: policy get/set/reset, tool calls through the gateway (in-scope forwards to the mock weather server, out-of-scope 403 denials that never reach the backend), the decision-run history and the scenario catalog. It needs no environment — the lab is a labelled simulation with no live mode. Add `X-Workspace: <name>` to work in a scratch workspace.
+
+```
+node ../../shared/postman/generator.mjs --spec postman/spec.json            # regenerate (never hand-edit the output)
+npx newman run postman/mcp-gateway-lab.postman_collection.json
+```
+
 ## What is real, and what is not
 
 - Real (shape and contract): the scope decision logic (name + coordinate checks, exact matching, the bounding boxes, the blocked-city radius), the fail-narrow default, the live per-request policy read, the capability kill switch. All mirror the AI-DEMO2 gateway script (`tx-weather-scope`) and weather-mcp page.
