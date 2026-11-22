@@ -1,0 +1,164 @@
+{
+  "name": "MCP Gateway LAB",
+  "slug": "mcp-gateway-lab",
+  "description": "API collection for MCP Gateway LAB: the simulated MCP gateway's policy surface. Set a policy, call the third-party weather tools through the gateway (in-scope forwards, out-of-scope denies and never reach the backend), browse the decision runs, and read the scenario catalog and diagrams. The lab is a labelled simulation; there is no live mode.",
+  "baseUrl": "http://localhost:7670",
+  "env": {},
+  "folders": [
+    {
+      "name": "Sanity (simulated, labelled)",
+      "description": "Health, mode info (always simulated) and the scenario/diagram catalogs.",
+      "requests": [
+        {
+          "name": "Health",
+          "method": "GET",
+          "path": "/api/health",
+          "tests": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json().state).to.eql('ready');"
+          ]
+        },
+        {
+          "name": "Info (mode is simulated by design)",
+          "method": "GET",
+          "path": "/api/info",
+          "tests": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json().simulated).to.eql(true);"
+          ]
+        },
+        {
+          "name": "Scenarios",
+          "method": "GET",
+          "path": "/api/scenarios",
+          "tests": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json()).to.have.property('verticals');"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Policy",
+      "description": "Read the active gateway policy, set one, and reset to defaults.",
+      "requests": [
+        {
+          "name": "Current policy",
+          "method": "GET",
+          "path": "/api/policy",
+          "tests": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json().policy).to.have.property('allowedState');"
+          ]
+        },
+        {
+          "name": "Set policy (allow Texas only)",
+          "method": "POST",
+          "path": "/api/policy",
+          "body": {
+            "allowedState": "texas",
+            "blockedCities": []
+          },
+          "tests": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json().policy.allowedState).to.eql('texas');"
+          ]
+        },
+        {
+          "name": "Reset policy and runs",
+          "method": "POST",
+          "path": "/api/reset",
+          "body": {},
+          "tests": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json().reset).to.eql('ok');"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tool calls through the gateway",
+      "description": "One JSON-RPC-shaped tool call at a time. In-scope calls forward to the (mock) third-party weather server; out-of-scope calls are denied with 403 and the backend never sees them.",
+      "requests": [
+        {
+          "name": "Forward: in-scope city",
+          "method": "POST",
+          "path": "/api/weather/tool",
+          "body": {
+            "tool": "get_current_conditions",
+            "arguments": {
+              "city_name": "Dallas"
+            }
+          },
+          "tests": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json().decision).to.eql('forward');",
+            "pm.expect(pm.response.json()).to.have.property('weather');"
+          ]
+        },
+        {
+          "name": "Deny: out-of-scope city",
+          "method": "POST",
+          "path": "/api/weather/tool",
+          "body": {
+            "tool": "get_current_conditions",
+            "arguments": {
+              "city_name": "Denver"
+            }
+          },
+          "tests": [
+            "pm.expect(pm.response.code).to.eql(403);",
+            "pm.expect(pm.response.json().decision).to.eql('denied');",
+            "pm.expect(pm.response.json()).to.not.have.property('weather');"
+          ]
+        },
+        {
+          "name": "Service status (no location, always forwarded)",
+          "method": "POST",
+          "path": "/api/weather/tool",
+          "body": {
+            "tool": "check_service_status"
+          },
+          "tests": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json().decision).to.eql('forward');"
+          ]
+        },
+        {
+          "name": "Unknown tool (negative)",
+          "method": "POST",
+          "path": "/api/weather/tool",
+          "body": {
+            "tool": "no_such_tool",
+            "arguments": {
+              "city_name": "Dallas"
+            }
+          },
+          "tests": [
+            "pm.expect(pm.response.code).to.be.oneOf([400, 403]);"
+          ]
+        },
+        {
+          "name": "Missing tool name (negative)",
+          "method": "POST",
+          "path": "/api/weather/tool",
+          "body": {
+            "arguments": {}
+          },
+          "tests": [
+            "pm.expect(pm.response.code).to.eql(400);"
+          ]
+        },
+        {
+          "name": "Decision runs",
+          "method": "GET",
+          "path": "/api/runs",
+          "tests": [
+            "pm.response.to.have.status(200);",
+            "pm.expect(pm.response.json().runs).to.be.an('array');"
+          ]
+        }
+      ]
+    }
+  ]
+}

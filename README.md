@@ -73,6 +73,24 @@ If the port is taken:
 
 Workspace id goes in `X-Workspace` (one visitor's state never touches another's).
 
+## Postman collection
+
+`postman/mcp-gateway-lab.postman_collection.json` drives the gateway without the UI: policy get/set/reset, tool calls through the gateway (in-scope forwards to the mock weather server, out-of-scope 403 denials that never reach the backend), the decision-run history and the scenario catalog. It needs no environment — the lab is a labelled simulation with no live mode. Add `X-Workspace: <name>` to work in a scratch workspace.
+
+```
+node ../../shared/postman/generator.mjs --spec postman/spec.json            # regenerate (never hand-edit the output)
+npx newman run postman/mcp-gateway-lab.postman_collection.json
+```
+
+## MCP server
+
+`mcp/server.mjs` is a stdio MCP server proxying a running lab as eight tools: `mglab_health`, `mglab_info`, `mglab_scenarios`, `mglab_policy_get`, `mglab_policy_set` (unknown state falls back to the narrowest, never wider), `mglab_tool_call` (in-scope forward / out-of-scope deny), `mglab_runs` and `mglab_reset`. It holds no state of its own; point it at the lab with `MGLAB_LAB_BASE` (default `http://localhost:7670`):
+
+```
+npm install --prefix mcp
+MGLAB_LAB_BASE=http://localhost:7670 node mcp/server.mjs
+```
+
 ## What is real, and what is not
 
 - Real (shape and contract): the scope decision logic (name + coordinate checks, exact matching, the bounding boxes, the blocked-city radius), the fail-narrow default, the live per-request policy read, the capability kill switch. All mirror the AI-DEMO2 gateway script (`tx-weather-scope`) and weather-mcp page.
