@@ -3,7 +3,7 @@
     "name": "MCP Gateway LAB",
     "description": "API collection for MCP Gateway LAB: the simulated MCP gateway's policy surface. Set a policy, call the third-party weather tools through the gateway (in-scope forwards, out-of-scope denies and never reach the backend), browse the decision runs, and read the scenario catalog and diagrams. The lab is a labelled simulation; there is no live mode.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_postman_id": "7bde7380-5173-424c-a127-83a13804014c"
+    "_postman_id": "postman-mcp-gateway-lab"
   },
   "item": [
     {
@@ -18,9 +18,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "/* Assertions for this request */",
-                  "pm.response.to.have.status(200);",
-                  "pm.expect(pm.response.json().state).to.eql('ready');"
+                  "pm.test(\"Health\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().state).to.eql('ready');",
+                  "});"
                 ]
               }
             }
@@ -50,9 +51,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "/* Assertions for this request */",
-                  "pm.response.to.have.status(200);",
-                  "pm.expect(pm.response.json().simulated).to.eql(true);"
+                  "pm.test(\"Info (mode is simulated by design)\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().simulated).to.eql(true);",
+                  "});"
                 ]
               }
             }
@@ -82,9 +84,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "/* Assertions for this request */",
-                  "pm.response.to.have.status(200);",
-                  "pm.expect(pm.response.json()).to.have.property('verticals');"
+                  "pm.test(\"Scenarios\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json()).to.have.property('verticals');",
+                  "});"
                 ]
               }
             }
@@ -120,9 +123,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "/* Assertions for this request */",
-                  "pm.response.to.have.status(200);",
-                  "pm.expect(pm.response.json().policy).to.have.property('allowedState');"
+                  "pm.test(\"Current policy\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().policy).to.have.property('allowedState');",
+                  "});"
                 ]
               }
             }
@@ -152,9 +156,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "/* Assertions for this request */",
-                  "pm.response.to.have.status(200);",
-                  "pm.expect(pm.response.json().policy.allowedState).to.eql('texas');"
+                  "pm.test(\"Set policy (allow Texas only)\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().policy.allowedState).to.eql('texas');",
+                  "});"
                 ]
               }
             }
@@ -193,9 +198,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "/* Assertions for this request */",
-                  "pm.response.to.have.status(200);",
-                  "pm.expect(pm.response.json().reset).to.eql('ok');"
+                  "pm.test(\"Reset policy and runs\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().reset).to.eql('ok');",
+                  "});"
                 ]
               }
             }
@@ -240,10 +246,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "/* Assertions for this request */",
-                  "pm.response.to.have.status(200);",
-                  "pm.expect(pm.response.json().decision).to.eql('forward');",
-                  "pm.expect(pm.response.json()).to.have.property('weather');"
+                  "pm.test(\"Forward: in-scope city\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().decision).to.eql('forward');",
+                  "  pm.expect(pm.response.json()).to.have.property('weather');",
+                  "});"
                 ]
               }
             }
@@ -283,10 +290,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "/* Assertions for this request */",
-                  "pm.expect(pm.response.code).to.eql(403);",
-                  "pm.expect(pm.response.json().decision).to.eql('denied');",
-                  "pm.expect(pm.response.json()).to.not.have.property('weather');"
+                  "pm.test(\"Deny: out-of-scope city\", function () {",
+                  "  pm.expect(pm.response.code).to.eql(403);",
+                  "  pm.expect(pm.response.json().decision).to.eql('denied');",
+                  "  pm.expect(pm.response.json()).to.not.have.property('weather');",
+                  "});"
                 ]
               }
             }
@@ -326,9 +334,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "/* Assertions for this request */",
-                  "pm.response.to.have.status(200);",
-                  "pm.expect(pm.response.json().decision).to.eql('forward');"
+                  "pm.test(\"Service status (no location, always forwarded)\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().decision).to.eql('forward');",
+                  "});"
                 ]
               }
             }
@@ -368,8 +377,9 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "/* Assertions for this request */",
-                  "pm.expect(pm.response.code).to.be.oneOf([400, 403]);"
+                  "pm.test(\"Unknown tool (negative)\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400, 403]);",
+                  "});"
                 ]
               }
             }
@@ -409,8 +419,9 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "/* Assertions for this request */",
-                  "pm.expect(pm.response.code).to.eql(400);"
+                  "pm.test(\"Missing tool name (negative)\", function () {",
+                  "  pm.expect(pm.response.code).to.eql(400);",
+                  "});"
                 ]
               }
             }
@@ -450,9 +461,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "/* Assertions for this request */",
-                  "pm.response.to.have.status(200);",
-                  "pm.expect(pm.response.json().runs).to.be.an('array');"
+                  "pm.test(\"Decision runs\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().runs).to.be.an('array');",
+                  "});"
                 ]
               }
             }
