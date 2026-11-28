@@ -1,16 +1,46 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_CAST, VERTICALS, fill, unfilled } from '../src/cast.js';
-import { rawStory, buildStory } from '../src/story.js';
+import { DEFAULT_CAST, DEFAULT_VERTICAL, VERTICALS, fill, unfilled, verticalFrom, loadCast } from '../src/cast.js';
+import { rawStory, buildStory, renderTalkTrackMarkdown } from '../src/story.js';
 import { evaluateWeatherScope, normalizePolicy, STATES, geocodeCity } from '../src/gateway.js';
 import { scanHosts } from '../src/safety.js';
-import { rawDiagram } from '../src/diagramData.js';
+import { rawDiagram, buildDiagram } from '../src/diagramData.js';
 
 const all = () => JSON.stringify([rawStory(), rawDiagram()]);
 
 test('every {{token}} in the story and diagram data is defined by every vertical (fails on an undefined token)', () => {
   for (const [name, cast] of Object.entries(VERTICALS)) assert.deepEqual(unfilled(all(), cast), [], name);
-  assert.equal(Object.keys(VERTICALS).length, 3);
+  assert.deepEqual(Object.keys(VERTICALS).sort(), ['airlines', 'finance', 'health', 'retail']);
+});
+
+// Brands and ids a lab run for the airline default must never show (earlier airline brands, and the other packs' brands).
+export const RETIRED = ['Meridian Air', 'Skyline Air', 'Northwind', 'Contoso', 'Fabrikam', 'Tessera Travel', 'Meridian Journeys', 'orders-agent', 'claims-agent', 'payments-agent'];
+
+test('the default vertical is airlines: AirGuard Airlines, host airguard, a fresh load and an unknown id both land on it', () => {
+  assert.equal(DEFAULT_VERTICAL, 'airlines');
+  assert.equal(DEFAULT_CAST.castBrand, 'AirGuard Airlines');
+  assert.equal(DEFAULT_CAST.castHost, 'airguard');
+  assert.equal(verticalFrom(undefined), 'airlines');
+  assert.equal(verticalFrom('airline-typo'), 'airlines');
+  assert.equal(verticalFrom('__proto__'), 'airlines');
+  assert.equal(loadCast(null).castBrand, 'AirGuard Airlines');
+});
+
+test('the airline run (story, diagram, talk track) carries AirGuard Airlines and no retired or other-pack brand', () => {
+  const text = JSON.stringify([buildStory(DEFAULT_CAST), buildDiagram(DEFAULT_CAST, 'gateway-scope-flow'), renderTalkTrackMarkdown(DEFAULT_CAST)]);
+  assert.match(text, /AirGuard Airlines/);
+  assert.match(text, /gateway\.airguard\.example/);
+  assert.equal(buildStory(DEFAULT_CAST).title, 'Weather MCP: the AirGuard Airlines agent gateway scopes a third-party tool');
+  for (const w of RETIRED) assert.ok(!text.toLowerCase().includes(w.toLowerCase()), `retired name in the airline run: ${w}`);
+});
+
+test('the three older packs still render their own brand', () => {
+  for (const [id, brand] of [['retail', 'Northwind Retail'], ['health', 'Contoso Health'], ['finance', 'Fabrikam Bank']]) {
+    const s = buildStory(loadCast(null, id));
+    assert.equal(s.cast.castBrand, brand);
+    assert.match(s.title, new RegExp(brand));
+    assert.ok(!/AirGuard/.test(JSON.stringify(s)), `${id} must not show the airline`);
+  }
 });
 
 test('the check itself catches an undefined token and leaves it visible', () => {

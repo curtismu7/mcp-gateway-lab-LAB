@@ -6,7 +6,7 @@ import { labelOffsets } from "./components/PatternDiagram";
 import { setJsonView } from "./components/JsonPane";
 
 const STORY = {
-  title: "t", intro: "intro text", banner: "SIMULATED: mock gateway", tokenLabel: "MOCK gateway decisions", hosted: false, verticals: ["retail", "health"],
+  title: "t", intro: "intro text", banner: "SIMULATED: mock gateway", tokenLabel: "MOCK gateway decisions", hosted: false, verticals: ["airlines", "retail", "health"],
   rule: { name: "Third-party weather scope (mock gateway policy)", appliesTo: "Agent gateway", note: "n", defaults: { showcase: true, allowedState: "texas", blockedCities: [], blockRadiusDeg: 0.2 } },
   tools: [
     { name: "get_current_conditions", tier: "weather", sampleLocation: "Austin", lesson: "l" },
@@ -24,7 +24,7 @@ const STORY = {
     { id: "say-first", title: "Say first", say: "Everything is simulated." },
     { id: "third-party", title: "The third-party tool", say: "The weather server is unmodified and policy-blind." },
   ],
-  cast: { castHost: "northwind", castBrand: "Northwind Retail" },
+  cast: { castHost: "airguard", castBrand: "AirGuard Airlines" },
 };
 const DIAGRAM = {
   title: "Weather MCP", intro: "diagram intro",
@@ -75,7 +75,7 @@ beforeEach(() => { override = {}; mockFetch(); window.location.hash = ""; setJso
 // What the server's mock trace looks like (server/src/weatherGatewayTrace.js), enough for the panel to draw.
 const gwTrace = ({ b, decision, reason, weather, status }) => ({
   source: "mock",
-  request: { method: "POST", url: "https://gateway.northwind.example/weather", headers: { authorization: "Bearer <MOCK token>", "content-type": "application/json" }, body: { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: b.tool, arguments: b.arguments } } },
+  request: { method: "POST", url: "https://gateway.airguard.example/weather", headers: { authorization: "Bearer <MOCK token>", "content-type": "application/json" }, body: { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: b.tool, arguments: b.arguments } } },
   response: { status, headers: { "content-type": "application/json" }, body: { decision, reason, ...(weather ? { weather } : {}) } },
   decisions: [
     { id: "capability", label: "Weather capability enabled (showcase flag)", outcome: "pass", basis: "checked", evidence: "the showcase flag is on" },
@@ -189,7 +189,7 @@ describe("diagram tab", () => {
     expect(await screen.findByText("Agent gateway: scope check")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Diagram" })).toHaveAttribute("aria-current", "page"); // shell-bar pill nav marks the current page
     expect(screen.getByRole("link", { name: "Gateway scope" })).not.toHaveAttribute("aria-current");
-    expect(calls.some((c) => c.url.startsWith("/api/diagram?vertical=retail"))).toBe(true);
+    expect(calls.some((c) => c.url.startsWith("/api/diagram?vertical=airlines"))).toBe(true);
     expect(screen.getByTestId("banner")).toBeInTheDocument();
     expect(screen.getByLabelText(/Step time/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /simulate/i }));

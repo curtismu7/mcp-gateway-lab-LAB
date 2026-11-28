@@ -11,7 +11,7 @@ import { VERTICALS } from "../../server/src/cast.js";
 
 const calls = [];
 vi.mock("./api", () => ({
-  getJson: vi.fn(async (url) => { calls.push(url); return url.startsWith("/api/info") ? { mode: "mock", realAvailable: false, hosted: false } : { banner: "SIMULATED", intro: "i", verticals: ["retail", "health", "finance"], scenarios: [], talkTrack: [] }; }),
+  getJson: vi.fn(async (url) => { calls.push(url); return url.startsWith("/api/info") ? { mode: "mock", realAvailable: false, hosted: false } : { banner: "SIMULATED", intro: "i", verticals: ["airlines", "retail", "health", "finance"], scenarios: [], talkTrack: [] }; }),
   resetWorkspace: vi.fn(), setMode: vi.fn(),
 }));
 vi.mock("./components/PolicyGate", () => ({ default: ({ requestedId }) => <p data-testid="pg">{String(requestedId)}</p> }));
@@ -59,7 +59,7 @@ describe("hand-off from Customer Agent LAB", () => {
     render(<App />);
     expect(screen.getByRole("note", NOTE)).toBeTruthy();
     await waitFor(() => expect(screen.getByTestId("pg").textContent).toBe("null"));
-    expect(calls).toContain("/api/scenarios?vertical=retail");
+    expect(calls).toContain("/api/scenarios?vertical=airlines");
   });
 
   it("no from, an unknown from or a bad id: no strip, no button, defaults", async () => {
@@ -70,7 +70,7 @@ describe("hand-off from Customer Agent LAB", () => {
       await waitFor(() => expect(screen.getByTestId("pg").textContent).toBe("null"));
       cleanup();
     }
-    expect(calls.filter((u) => u.startsWith("/api/scenarios")).every((u) => u.endsWith("retail"))).toBe(true);
+    expect(calls.filter((u) => u.startsWith("/api/scenarios")).every((u) => u.endsWith("airlines"))).toBe(true);
   });
 
   it("Back goes to the proxy path under /mcp-gateway-lab/, the direct URL at the root", () => {

@@ -9,6 +9,8 @@ A third-party weather MCP server is scoped at an agent gateway: the gateway enfo
 2. **The scope policy.** The gateway allows one configurable US state at a time (Texas by default), or everything (`any`), or everything except an admin-managed blocked-city list. It checks the city NAME and the COORDINATES (the agent geocodes first), exactly, with no substring matching: "Plano, IL" is not Plano, TX, and "Miami, OH" is not Miami, FL.
 3. **Live reconfigure.** The allowed state is admin-editable and read on EVERY request: switch Texas to Any and the exact same Miami query flips from denied to permitted — no restart, no code change. Reset restores Texas so the next pass starts from the documented policy.
 
+The default story is AirGuard Airlines, a fictional airline (vertical `airlines`, host `airguard`, agent `passenger-chat-agent`): the page title and the gateway URL (`https://gateway.airguard.example/weather`) carry it. The weather policy is the same in every vertical; the `retail`, `health` and `finance` packs are still selectable from the Vertical menu or `?vertical=`. `customer.config.example.json` shows how to override the brand.
+
 Mock + Real (rule 19): Mock is fully offline (mock gateway, mock policy store, mock weather server). Real toggle mechanics follow rule 19: unconfigured, it is disabled with a how-to tooltip and `POST /api/mode` answers 409. In this build Real is RESERVED — the toggle reports a configured `MGLAB_REAL_*` env, but no live-gateway data path is wired yet; Mock is the story.
 
 Every host ends in `.example`, and the app makes no outbound network request (a netguard blocks them and tests prove it). It needs no tenant and no credentials. Denial reasons are shown raw, so a visitor sees exactly which policy line decided.
