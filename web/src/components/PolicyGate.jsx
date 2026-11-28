@@ -159,7 +159,7 @@ function ToolCall({ tools, onResult }) {
   );
 }
 
-export default function PolicyGate({ story, resetSignal, requestedId, onSelect }) {
+export default function PolicyGate({ story, resetSignal, requestedId, onSelect, onRun = null }) {
   const known = (v) => story.scenarios.some((s) => s.id === v);
   const [id, setId] = useState(known(requestedId) ? requestedId : story.scenarios[0].id);
   useEffect(() => { if (known(requestedId)) setId(requestedId); }, [requestedId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -189,10 +189,10 @@ export default function PolicyGate({ story, resetSignal, requestedId, onSelect }
     }
     const res = await runTool({ tool: sc.call.tool, arguments: sc.call.arguments, scenario: sc.id }).catch(() => ({ ok: false, status: 0, body: {} }));
     if (drop()) return;
-    if (res.ok || res.body.decision) setRun(res.body); else { setRun(null); setFail(`Could not evaluate (${res.body.detail || res.body.error || res.status}).`); }
-  }, [story]);
+    if (res.ok || res.body.decision) { setRun(res.body); onRun?.(res.body); } else { setRun(null); onRun?.(null); setFail(`Could not evaluate (${res.body.detail || res.body.error || res.status}).`); }
+  }, [story, onRun]);
 
-  useEffect(() => { setRun(null); }, [resetSignal]);
+  useEffect(() => { setRun(null); onRun?.(null); }, [resetSignal]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { runScenario(id); }, [id, resetSignal, runScenario]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // A policy save re-runs the SAME call under the new policy (UC32): the editor's policy, not the scenario's.
@@ -215,7 +215,7 @@ export default function PolicyGate({ story, resetSignal, requestedId, onSelect }
         <GatewayTrace source="mock" title={TRACE_TITLE} basisNote={TRACE_NOTE} exchanges={run?.trace ? [{ step: 1, title: "Agent calls the gateway", status: run.trace.response?.status ?? null, trace: run.trace }] : []} />
       </section>
       {policy && <PolicyEditor current={policy} onSaved={onPolicySaved} />}
-      <ToolCall tools={story.tools} onResult={(r) => setRun(r)} />
+      <ToolCall tools={story.tools} onResult={(r) => { setRun(r); onRun?.(r); }} />
       <section className="panel" aria-labelledby="policy-h2">
         <h2 id="policy-h2"><span className="step-num" aria-hidden="true">5</span>Scenario policy (decoded)</h2>
         <p className="tag tag--warn">{story.tokenLabel}</p>
