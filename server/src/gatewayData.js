@@ -5,7 +5,7 @@
 export const BANNER = 'SIMULATED: a mock agent gateway, a mock policy store and a mock third-party weather MCP server. Nothing here calls a real gateway, identity provider or tenant.';
 export const HOSTED_BANNER = 'HOSTED SIMULATION: a mock agent gateway, a mock policy store and a mock third-party weather MCP server. Nothing here calls a real gateway, identity provider or tenant.';
 
-export const TITLE = "Weather MCP: {{castBrand}}'s agent gateway scopes a third-party tool";
+export const TITLE = 'Weather MCP: the {{castBrand}} agent gateway scopes a third-party tool';
 export const INTRO = 'The agent calls an unmodified third-party weather MCP server through the agent gateway. The gateway enforces a live, admin-editable state-scope policy entirely at the edge: the backend never sees the restriction and has no concept of it. Change the policy and the SAME call flips — no restart.';
 
 // status: measured = seen live in AI-DEMO2 (weather-mcp page, tx-weather-scope gateway script); inferred = our reading; UNVERIFIED = not confirmed.

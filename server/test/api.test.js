@@ -91,10 +91,15 @@ test('GET /api/scenarios returns the filled story; customer.config.json is read 
     assert.match(j.tokenLabel, /MOCK/);
     assert.ok(j.facts.some((f) => f.id === 'fail-narrow' && f.status === 'measured'));
     assert.ok(j.tools.length >= 2, 'the tool list ships with the story');
+    assert.match(j.rule.appliesTo, /airguard/, 'the default story is AirGuard Airlines');
+    assert.match(j.title, /AirGuard Airlines/);
+    assert.deepEqual(j.verticals, ['airlines', 'retail', 'health', 'finance']);
     j = await (await fetch(`${url}/api/scenarios?vertical=finance`)).json();
     assert.match(j.rule.appliesTo, /fabrikam/);
+    j = await (await fetch(`${url}/api/scenarios?vertical=retail`)).json();
+    assert.match(j.rule.appliesTo, /northwind/, 'a saved retail choice still works');
     j = await (await fetch(`${url}/api/scenarios?vertical=__proto__`)).json();
-    assert.match(j.rule.appliesTo, /northwind/, 'unknown vertical keeps the default');
+    assert.match(j.rule.appliesTo, /airguard/, 'unknown vertical keeps the default');
     fs.writeFileSync(file, JSON.stringify({ cast: { host: 'customhost' } }));
     j = await (await fetch(`${url}/api/scenarios`)).json();
     assert.match(j.rule.appliesTo, /customhost/);
@@ -255,4 +260,20 @@ test('GET /api/shelf returns SHELF_URL (slash trimmed) with no web build; POST i
   } finally {
     if (prev === undefined) delete process.env.SHELF_URL; else process.env.SHELF_URL = prev;
   }
+});
+
+test('the default airline run (scenarios, diagram, a denied call and a forwarded call with their traces) names no retired brand', async () => {
+  await withServer(async (url) => {
+    const post = (body) => fetch(`${url}/api/weather/tool`, { method: 'POST', headers: { 'content-type': 'application/json', origin: url, 'x-workspace': 'airline' }, body: JSON.stringify(body) });
+    const parts = [
+      await (await fetch(`${url}/api/scenarios`)).text(),
+      await (await fetch(`${url}/api/diagram?name=gateway-scope-flow`)).text(),
+      await (await post({ tool: 'get_current_conditions', arguments: { city_name: 'Miami' } })).text(),
+      await (await post({ tool: 'get_current_conditions', arguments: { city_name: 'Austin' } })).text(),
+    ];
+    const text = parts.join('\n');
+    assert.match(text, /AirGuard Airlines/);
+    assert.match(text, /gateway\.airguard\.example/);
+    for (const w of ['Meridian Air', 'Skyline Air', 'Northwind', 'Contoso', 'Fabrikam', 'Tessera', 'orders-agent']) assert.ok(!text.includes(w), `retired name in the airline run: ${w}`);
+  });
 });

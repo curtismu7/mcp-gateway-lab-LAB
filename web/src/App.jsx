@@ -32,7 +32,7 @@ const hashParts = () => {
 export default function App() {
   // Opened from Customer Agent LAB: preselect the matching scenario and vertical (handoffMap.js), once, on load.
   const [handoff] = useState(() => readReturnContext(window.location.search));
-  const [vertical, setVertical] = useState(() => verticalFor(handoff) || "retail");
+  const [vertical, setVertical] = useState(() => verticalFor(handoff) || "airlines");
   const [story, setStory] = useState(null);
   const [info, setInfo] = useState(undefined); // undefined = loading, null = failed
   const [error, setError] = useState(null);
@@ -97,7 +97,7 @@ export default function App() {
         <TopMenu
           postman={{ repo: "curtismu7/mcp-gateway-lab-LAB", slug: "mcp-gateway-lab" }}
           mode={{ value: info?.mode === "real" ? "real" : "mock", onChange: switchMode, realAvailable: info?.realAvailable ?? null, realHint: "Real is owner-run and RESERVED in this build: the toggle reports it, the live-gateway data path is not wired yet." }}
-          vertical={{ value: vertical, onChange: setVertical, options: story ? story.verticals : ["retail"] }}
+          vertical={{ value: vertical, onChange: setVertical, options: story ? story.verticals : ["airlines"] }}
           present={{ active: presenter, onToggle: () => setPresenter((v) => !v) }}
           talkTrack={{ active: tab === "talk", onToggle: () => select("talk") }}
           help={{ href: "https://github.com/curtismu7/mcp-gateway-lab-LAB#readme" }}
